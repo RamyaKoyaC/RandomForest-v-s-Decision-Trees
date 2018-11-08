@@ -1,0 +1,61 @@
+library(randomForest)
+cancer_data <- read.csv("/storage/scratch2/share/DSA/clean_BayesianNetworkGenerator_breast-cancer_small.csv")
+cancer_data<-cancer_data[1:500,] #selecting only the 500 rows 
+cancer_data$age <- factor(cancer_data$age)
+is.factor(cancer_data[,1])
+cancer_data$menopause <- factor(cancer_data$menopause)
+is.factor(cancer_data[,2])
+cancer_data$tumor.size <- factor(cancer_data$tumor.size)
+is.factor(cancer_data[,3])
+cancer_data$inv.nodes <- factor(cancer_data$inv.nodes)
+is.factor(cancer_data[,4])
+cancer_data$node.caps <- factor(cancer_data$node.caps)
+is.factor(cancer_data[,5])
+cancer_data$deg.malig <- factor(cancer_data$deg.malig)
+is.factor(cancer_data[,6])
+cancer_data$breast <- factor(cancer_data$breast)
+is.factor(cancer_data[,7])
+cancer_data$breast.quad <- factor(cancer_data$breast.quad)
+is.factor(cancer_data[,8])
+cancer_data$irradiat <- factor(cancer_data$irradiat)
+is.factor(cancer_data[,9])
+cancer_data$Class <- factor(cancer_data$Class)
+is.factor(cancer_data[,10])
+head(cancer_data) #printing the first few rows 
+str(cancer_data) #Converting it into a dataframe
+summary(cancer_data) # printing out the summary
+set.seed(100) 
+train <- sample(nrow(cancer_data), 0.7*nrow(cancer_data)) #splitting the data in train and test sets
+train_set <- cancer_data[train,]
+test_set <- cancer_data[-train,]
+summary(train_set) #viewing the models train set
+summary(test_set) #viewing the models test set
+model1 <- randomForest(Class~ ., data=train_set, importance=TRUE) #building a model 1 alongside the confusion matrix
+model1 #viewing the built model 
+plot(model1) #plotting the number of tress v/s error
+model2 <- randomForest(Class ~ ., data = train_set, ntree = 500, mtry = 6, importance = TRUE)  #building a model 2 alongside the confusion matrix
+model2 #viweing the built model 
+plot(model2) #plotting the number of trees v/s error
+pred_train <- predict(model2, train_set, type = "class") 
+mean(pred_train == train_set$Class)  #predicting the train set on model 2
+table(pred_train, train_set$Class)  
+pred_test <- predict(model2, test_set, type="class")
+mean(pred_test == test_set$Class) #preciting the test set on model 2
+table(pred_test, test_set$Class)
+importance(model2) #Finding the importances for model 2
+varImpPlot(model2) # PLotting the importances 
+importance(model1)
+varImpPlot(model1)
+a=c()
+i=5
+for (i in 3:8) {
+  model3 <- randomForest(Class ~ ., data = train_set, ntree = 500, mtry = i, importance = TRUE)
+  pred_test <- predict(model3, test_set, type = "class")
+  a[i-2] = mean(pred_test == test_set$Class)
+}
+
+a
+plot(3:8,a)
+plot(model3)
+
+
